@@ -34,6 +34,7 @@ const ITEM_POOL: OrderLine[] = [
 
 const SECTIONS = ['112', '118', '124', '204', '208', '232']
 const ROWS = ['A', 'C', 'F', 'J', 'M', 'R']
+const NAMES = ['Alex', 'Jordan', 'Sam', 'Taylor', 'Casey', 'Riley', 'Morgan', 'Jamie']
 
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
@@ -58,6 +59,7 @@ export function makeOrder(ageSec = 0): RunnerOrder {
   return {
     id: 'ord_' + Math.random().toString(36).slice(2, 10),
     orderNo: nextOrderNo++,
+    customerName: pick(NAMES),
     seat: randomSeat(),
     stand: pick(STANDS),
     lines: randomLines(),

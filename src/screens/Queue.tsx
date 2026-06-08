@@ -75,6 +75,11 @@ function OrderCard({ o }: { o: RunnerOrder }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, color: 'var(--faint)', fontSize: 13, fontWeight: 700 }}>
         <Icon name="bag" size={14} sw={2.2} /> Pick up · {o.stand.name}
       </div>
+      {o.customerName && (
+        <div style={{ marginTop: 6, color: 'var(--muted)', fontSize: 13, fontWeight: 700 }}>
+          👤 For {o.customerName}
+        </div>
+      )}
 
       {/* claim */}
       <button

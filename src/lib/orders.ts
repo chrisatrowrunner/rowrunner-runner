@@ -21,8 +21,8 @@ export interface RunnerOrdersApi {
   listActive(): Promise<RunnerOrder[]>
   /** Claim an order for a runner: stage → 2 (picked up), runner assigned. */
   claim(orderId: string, runner: RunnerSession): Promise<RunnerOrder>
-  /** Mark a claimed order delivered: stage → 4. */
-  deliver(orderId: string): Promise<RunnerOrder>
+  /** Deliver an order — only succeeds if `code` matches the guest's. Returns true on success. */
+  deliver(orderId: string, code: string): Promise<boolean>
   /** Live updates — fires the full active set whenever anything changes. */
   subscribe(onChange: (orders: RunnerOrder[]) => void): () => void
 }
@@ -52,8 +52,10 @@ function createEdgeApi(): RunnerOrdersApi {
     claim(orderId, runner) {
       return patch(orderId, { stage: 2, runnerId: runner.id, runnerName: runner.name })
     },
-    deliver(orderId) {
-      return patch(orderId, { stage: 4 })
+    async deliver(orderId) {
+      // Edge server has no code verification — just mark delivered.
+      await patch(orderId, { stage: 4 })
+      return true
     },
     subscribe(onChange) {
       const es = new EventSource(`${EDGE_URL}/events`)
@@ -116,7 +118,7 @@ function createMockApi(): RunnerOrdersApi {
       const o = find(orderId)
       o.stage = 4
       emit()
-      return o
+      return true
     },
     subscribe(onChange) {
       subs.add(onChange)
@@ -131,10 +133,15 @@ function createMockApi(): RunnerOrdersApi {
 }
 
 // ── Supabase implementation (used when env vars are set) ─────
+// Explicit column list — NEVER select `code` (the handoff code is hidden from
+// the table API by column-level grants; it's only verified via deliver_order).
+const COLS = 'id, order_no, customer_name, seat, stand, lines, placed_at, stage, runner_id, runner_name'
+
 /** Raw `orders` table row (snake_case) → RunnerOrder (camelCase). */
 type OrderRow = {
   id: string
   order_no: number
+  customer_name: string | null
   seat: RunnerOrder['seat']
   stand: RunnerOrder['stand']
   lines: RunnerOrder['lines'] | null
@@ -147,6 +154,7 @@ function rowToOrder(r: OrderRow): RunnerOrder {
   return {
     id: r.id,
     orderNo: r.order_no,
+    customerName: r.customer_name,
     seat: r.seat,
     stand: r.stand,
     lines: r.lines ?? [],
@@ -162,11 +170,11 @@ function createSupabaseApi(): RunnerOrdersApi {
   const listActive = async () => {
     const { data, error } = await sb
       .from('orders')
-      .select('*')
+      .select(COLS)
       .lt('stage', 4)
       .order('placed_at', { ascending: true })
     if (error) throw error
-    return (data as OrderRow[]).map(rowToOrder)
+    return (data as unknown as OrderRow[]).map(rowToOrder)
   }
   return {
     listActive,
@@ -177,20 +185,16 @@ function createSupabaseApi(): RunnerOrdersApi {
         .update({ stage: 2, runner_id: runner.id, runner_name: runner.name })
         .eq('id', orderId)
         .is('runner_id', null)
-        .select()
+        .select(COLS)
         .single()
       if (error) throw new Error('This order was just claimed by someone else.')
-      return rowToOrder(data as OrderRow)
+      return rowToOrder(data as unknown as OrderRow)
     },
-    async deliver(orderId) {
-      const { data, error } = await sb
-        .from('orders')
-        .update({ stage: 4 })
-        .eq('id', orderId)
-        .select()
-        .single()
+    async deliver(orderId, code) {
+      // Server verifies the guest's code and only then sets stage 4.
+      const { data, error } = await sb.rpc('deliver_order', { p_id: orderId, p_code: code })
       if (error) throw error
-      return rowToOrder(data as OrderRow)
+      return data === true
     },
     subscribe(onChange) {
       listActive().then(onChange).catch(() => {})

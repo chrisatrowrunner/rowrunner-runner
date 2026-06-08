@@ -1,6 +1,7 @@
 // Active.tsx — Screen 3: the one order this runner owns. Replaces the queue
 // until it's delivered (one active order at a time in the MVP). Seat front and
 // center, full item list, where to pick up, and a single delivered action.
+import { useState } from 'react'
 import { useStore, ageLabel } from '../store/store'
 import { Icon } from '../components/Icon'
 import { AppHeader, CTA, BottomDock } from '../components/ui'
@@ -8,6 +9,7 @@ import { AppHeader, CTA, BottomDock } from '../components/ui'
 export function ActiveScreen() {
   const s = useStore()
   const o = s.activeOrder
+  const [code, setCode] = useState('')
   if (!o) return null
 
   return (
@@ -51,6 +53,11 @@ export function ActiveScreen() {
           <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--ice)', marginTop: 2 }}>
             Row {o.seat.row} · Seat {o.seat.seat}
           </div>
+          {o.customerName && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, fontSize: 14, fontWeight: 700, background: 'rgba(255,255,255,.10)', padding: '7px 12px', borderRadius: 999 }}>
+              👤 For {o.customerName}
+            </div>
+          )}
         </div>
 
         {/* pickup */}
@@ -113,7 +120,35 @@ export function ActiveScreen() {
       </div>
 
       <BottomDock>
-        <CTA label="Mark as delivered" icon="check" onClick={s.deliver} />
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--muted)', marginBottom: 8, textAlign: 'center' }}>
+          Ask {o.customerName || 'the guest'} for their 6-digit code
+        </div>
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+          inputMode="numeric"
+          placeholder="• • • • • •"
+          style={{
+            width: '100%',
+            height: 56,
+            textAlign: 'center',
+            letterSpacing: 8,
+            fontSize: 26,
+            fontWeight: 800,
+            color: 'var(--navy)',
+            background: 'var(--offwhite)',
+            border: '1.5px solid var(--line)',
+            borderRadius: 14,
+            outline: 'none',
+            marginBottom: 10,
+          }}
+        />
+        <CTA
+          label="Confirm delivery"
+          icon="check"
+          disabled={code.length !== 6}
+          onClick={() => s.deliver(code)}
+        />
       </BottomDock>
     </div>
   )

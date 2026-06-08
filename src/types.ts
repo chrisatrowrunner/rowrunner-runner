@@ -41,6 +41,8 @@ export type OrderStage = 0 | 1 | 2 | 3 | 4
 export interface RunnerOrder {
   id: string
   orderNo: number
+  /** the guest's name (so the runner knows who they're delivering to) */
+  customerName: string | null
   seat: Seat
   stand: Stand
   lines: OrderLine[]

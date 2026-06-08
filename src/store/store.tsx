@@ -29,7 +29,7 @@ export interface Store {
   now: number
   // actions
   claim: (orderId: string) => Promise<void>
-  deliver: () => Promise<void>
+  deliver: (code: string) => Promise<void>
   // chrome
   toast: (msg: string) => void
   toastMsg: string | null
@@ -139,18 +139,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const deliver = async () => {
+  const deliver = async (code: string) => {
     if (!activeOrder) return
-    const delivered = await api.deliver(activeOrder.id)
-    setJustDelivered(delivered)
-    setActiveId(null)
-    setScreen('delivered')
-    // Bounce back to the queue automatically — no manual nav for the runner.
-    if (redirectT.current) clearTimeout(redirectT.current)
-    redirectT.current = setTimeout(() => {
-      setJustDelivered(null)
-      setScreen('queue')
-    }, 2600)
+    try {
+      const ok = await api.deliver(activeOrder.id, code)
+      if (!ok) {
+        toast('Incorrect code — double-check with the guest')
+        return
+      }
+      setJustDelivered(activeOrder)
+      setActiveId(null)
+      setScreen('delivered')
+      // Bounce back to the queue automatically — no manual nav for the runner.
+      if (redirectT.current) clearTimeout(redirectT.current)
+      redirectT.current = setTimeout(() => {
+        setJustDelivered(null)
+        setScreen('queue')
+      }, 2600)
+    } catch {
+      toast('Could not confirm delivery — try again')
+    }
   }
 
   const value: Store = {
