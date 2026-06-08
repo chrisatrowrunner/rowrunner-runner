@@ -9,10 +9,10 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Register the app-shell service worker in production only, so it never
-// interferes with Vite's dev HMR.
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
-  })
+// Service worker is intentionally NOT registered (it caused stale builds during
+// active development). Proactively clean up any worker/cache a previous build
+// installed, so users always load fresh code.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister()))
+  if ('caches' in window) caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)))
 }

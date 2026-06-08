@@ -1,42 +1,20 @@
-// sw.js — minimal app-shell service worker so the runner app installs as a PWA.
+// sw.js — SELF-DESTRUCT.
 //
-// Strategy: network-first for navigations (always try fresh so a new build is
-// picked up the moment the runner has signal), falling back to the cached shell
-// when offline. Static assets are cached on first fetch. Registered only in
-// production from main.tsx, so it never interferes with the Vite dev server.
-const CACHE = 'rowrunner-runner-v1'
-const SHELL = ['/', '/index.html', '/manifest.webmanifest']
+// The app-shell service worker caused stale builds to be served during active
+// development. This version unregisters itself, clears all caches, and reloads
+// any open clients so existing installs immediately get fresh code. The browser
+// always re-fetches sw.js from the network, so changing this file is what breaks
+// a bad cache. (Registration is also removed from main.tsx.)
+self.addEventListener('install', () => self.skipWaiting())
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()))
-})
-
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
-    ).then(() => self.clients.claim()),
-  )
-})
-
-self.addEventListener('fetch', (e) => {
-  const req = e.request
-  if (req.method !== 'GET') return
-  // Navigations: network-first, fall back to cached shell offline.
-  if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).catch(() => caches.match('/index.html')))
-    return
-  }
-  // Other GETs: cache-first, then network (and cache the result).
-  e.respondWith(
-    caches.match(req).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((res) => {
-          const copy = res.clone()
-          caches.open(CACHE).then((c) => c.put(req, copy))
-          return res
-        }),
-    ),
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys()
+      await Promise.all(keys.map((k) => caches.delete(k)))
+      await self.registration.unregister()
+      const clients = await self.clients.matchAll({ type: 'window' })
+      clients.forEach((c) => c.navigate(c.url))
+    })(),
   )
 })
