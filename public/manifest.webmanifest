@@ -1,0 +1,14 @@
+{
+  "name": "RowRunner Runner",
+  "short_name": "Runner",
+  "description": "Claim and deliver fan orders — RowRunner venue-staff dispatch.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#072E48",
+  "theme_color": "#072E48",
+  "icons": [
+    { "src": "/assets/logo-bird-navy.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/logo-bird-white.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
