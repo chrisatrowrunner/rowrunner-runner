@@ -2,6 +2,14 @@
   command = "npm run build"
   publish = "dist"
 
+# Build-time env for Vite. The anon key is a PUBLIC client key (it ships in the
+# browser bundle regardless) — data is protected by Supabase RLS, not by hiding
+# this. Safe to commit. To rotate or override, set these in Netlify's UI instead.
+[build.environment]
+  VITE_SUPABASE_URL = "https://kboevpucqjoftgmhrkzq.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtib2V2cHVjcWpvZnRnbWhya3pxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5Mjk0OTUsImV4cCI6MjA5NjUwNTQ5NX0.T6W1QPUrVIqXsGog5axDlDneTUwZJnYu_JClIDVCkPc"
+  VITE_VENUE_ID = "nyc-tech-week"
+
 # SPA routing — send all paths to index.html so client-side routes work
 [[redirects]]
   from = "/*"
