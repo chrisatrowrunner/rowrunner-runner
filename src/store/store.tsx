@@ -63,7 +63,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // ── live order feed ──
-  useEffect(() => api.subscribe(setOrders), [])
+  // Subscribe only once authenticated. Supabase RLS (staff-only reads) and
+  // Realtime both key off the connection's role, so subscribing before login
+  // would bind the channel to the anon role — which can see nothing — and no
+  // orders would ever arrive. Re-subscribing when the session appears fixes it.
+  useEffect(() => {
+    if (!session) {
+      setOrders([])
+      return
+    }
+    return api.subscribe(setOrders)
+  }, [session])
 
   // ── 1s clock for age timers ──
   useEffect(() => {
