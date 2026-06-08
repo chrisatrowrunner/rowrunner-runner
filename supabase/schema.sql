@@ -46,3 +46,13 @@ create policy "staff claim and deliver" on public.orders
 
 -- No DELETE policy on purpose → app keys can't delete orders (dashboard can).
 -- Further hardening to consider: scope reads/inserts to a specific venue_id.
+
+-- ── fan order tracking ───────────────────────────────────────
+-- Lets the anonymous fan app read ONE order's status by id (which it generated
+-- at checkout) without being able to enumerate the table. See order-status-rpc.sql.
+create or replace function public.order_status(p_id uuid)
+returns table (stage smallint, order_no bigint, runner_name text)
+language sql security definer set search_path = public
+as $$ select stage, order_no, runner_name from public.orders where id = p_id; $$;
+
+grant execute on function public.order_status(uuid) to anon, authenticated;
