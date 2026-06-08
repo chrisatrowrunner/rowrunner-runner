@@ -67,12 +67,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // Realtime both key off the connection's role, so subscribing before login
   // would bind the channel to the anon role — which can see nothing — and no
   // orders would ever arrive. Re-subscribing when the session appears fixes it.
+  //
+  // Realtime is the fast path, but its delivery under RLS can be unreliable, so
+  // we ALSO poll every few seconds as a guaranteed fallback. Both just replace
+  // the full active set, so they're safe to run together.
   useEffect(() => {
     if (!session) {
       setOrders([])
       return
     }
-    return api.subscribe(setOrders)
+    const unsubscribe = api.subscribe(setOrders)
+    const poll = setInterval(() => {
+      api.listActive().then(setOrders).catch(() => {})
+    }, 4000)
+    return () => {
+      unsubscribe()
+      clearInterval(poll)
+    }
   }, [session])
 
   // ── 1s clock for age timers ──
