@@ -5,6 +5,7 @@ import { LoginScreen } from './screens/Login'
 import { QueueScreen } from './screens/Queue'
 import { ActiveScreen } from './screens/Active'
 import { DeliveredScreen } from './screens/Delivered'
+import { HistoryScreen } from './screens/History'
 
 function Router() {
   const s = useStore()
@@ -18,6 +19,8 @@ function Router() {
       return s.activeOrder ? <ActiveScreen /> : <QueueScreen />
     case 'delivered':
       return <DeliveredScreen />
+    case 'history':
+      return <HistoryScreen />
     default:
       return <LoginScreen />
   }

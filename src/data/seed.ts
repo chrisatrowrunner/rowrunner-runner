@@ -60,6 +60,7 @@ export function makeOrder(ageSec = 0): RunnerOrder {
     id: 'ord_' + Math.random().toString(36).slice(2, 10),
     orderNo: nextOrderNo++,
     customerName: pick(NAMES),
+    notes: null,
     seat: randomSeat(),
     stand: pick(STANDS),
     lines: randomLines(),

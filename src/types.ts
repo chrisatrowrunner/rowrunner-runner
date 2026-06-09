@@ -43,6 +43,8 @@ export interface RunnerOrder {
   orderNo: number
   /** the guest's name (so the runner knows who they're delivering to) */
   customerName: string | null
+  /** special instructions / dietary notes from the guest (may be empty) */
+  notes: string | null
   seat: Seat
   stand: Stand
   lines: OrderLine[]
@@ -62,4 +64,4 @@ export interface RunnerSession {
 }
 
 /** Runner-app screens. */
-export type Screen = 'login' | 'queue' | 'active' | 'delivered'
+export type Screen = 'login' | 'queue' | 'active' | 'delivered' | 'history'

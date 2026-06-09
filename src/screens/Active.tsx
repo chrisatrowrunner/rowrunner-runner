@@ -60,6 +60,31 @@ export function ActiveScreen() {
           )}
         </div>
 
+        {/* special instructions / dietary notes */}
+        {o.notes && (
+          <div
+            style={{
+              display: 'flex',
+              gap: 12,
+              background: 'rgba(245,158,11,.10)',
+              border: '1.5px solid rgba(245,158,11,.35)',
+              borderRadius: 18,
+              padding: '14px 16px',
+              marginTop: 12,
+            }}
+          >
+            <span style={{ fontSize: 20, lineHeight: 1.1 }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.4, color: '#B45309', textTransform: 'uppercase' }}>
+                Special instructions
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--navy)', marginTop: 2, lineHeight: 1.35 }}>
+                {o.notes}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* pickup */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, padding: '14px 16px', marginTop: 12, boxShadow: 'var(--shadow-card)' }}>
           <span style={{ width: 44, height: 44, borderRadius: '50%', flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(91,184,212,.16)', color: 'var(--ice-deep)' }}>

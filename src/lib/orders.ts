@@ -19,6 +19,8 @@ import { getSupabase, hasSupabase } from './supabase'
 export interface RunnerOrdersApi {
   /** Active orders: not delivered, not cancelled. Sorted oldest-first. */
   listActive(): Promise<RunnerOrder[]>
+  /** Delivered orders (most recent first) — the runner's history view. */
+  listHistory(): Promise<RunnerOrder[]>
   /** Claim an order for a runner: stage → 2 (picked up), runner assigned. */
   claim(orderId: string, runner: RunnerSession): Promise<RunnerOrder>
   /** Deliver an order — only succeeds if `code` matches the guest's. Returns true on success. */
@@ -48,6 +50,10 @@ function createEdgeApi(): RunnerOrdersApi {
     async listActive() {
       const res = await fetch(`${EDGE_URL}/orders?active=1`)
       return ((await res.json()) as RunnerOrder[]).sort(byAge)
+    },
+    async listHistory() {
+      const res = await fetch(`${EDGE_URL}/orders`)
+      return ((await res.json()) as RunnerOrder[]).filter((o) => o.stage >= 4).sort((a, b) => b.placedAt - a.placedAt)
     },
     claim(orderId, runner) {
       return patch(orderId, { stage: 2, runnerId: runner.id, runnerName: runner.name })
@@ -106,6 +112,9 @@ function createMockApi(): RunnerOrdersApi {
     async listActive() {
       return active()
     },
+    async listHistory() {
+      return orders.filter((o) => o.stage >= 4).sort((a, b) => b.placedAt - a.placedAt)
+    },
     async claim(orderId, runner) {
       const o = find(orderId)
       o.runnerId = runner.id
@@ -135,13 +144,14 @@ function createMockApi(): RunnerOrdersApi {
 // ── Supabase implementation (used when env vars are set) ─────
 // Explicit column list — NEVER select `code` (the handoff code is hidden from
 // the table API by column-level grants; it's only verified via deliver_order).
-const COLS = 'id, order_no, customer_name, seat, stand, lines, placed_at, stage, runner_id, runner_name'
+const COLS = 'id, order_no, customer_name, notes, seat, stand, lines, placed_at, stage, runner_id, runner_name'
 
 /** Raw `orders` table row (snake_case) → RunnerOrder (camelCase). */
 type OrderRow = {
   id: string
   order_no: number
   customer_name: string | null
+  notes: string | null
   seat: RunnerOrder['seat']
   stand: RunnerOrder['stand']
   lines: RunnerOrder['lines'] | null
@@ -155,6 +165,7 @@ function rowToOrder(r: OrderRow): RunnerOrder {
     id: r.id,
     orderNo: r.order_no,
     customerName: r.customer_name,
+    notes: r.notes,
     seat: r.seat,
     stand: r.stand,
     lines: r.lines ?? [],
@@ -176,8 +187,19 @@ function createSupabaseApi(): RunnerOrdersApi {
     if (error) throw error
     return (data as unknown as OrderRow[]).map(rowToOrder)
   }
+  const listHistory = async () => {
+    const { data, error } = await sb
+      .from('orders')
+      .select(COLS)
+      .gte('stage', 4)
+      .order('placed_at', { ascending: false })
+      .limit(50)
+    if (error) throw error
+    return (data as unknown as OrderRow[]).map(rowToOrder)
+  }
   return {
     listActive,
+    listHistory,
     async claim(orderId, runner) {
       // .is('runner_id', null) makes the claim atomic — a second runner gets 0 rows.
       const { data, error } = await sb

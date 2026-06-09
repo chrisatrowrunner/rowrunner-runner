@@ -135,6 +135,7 @@ export function QueueScreen() {
           >
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--ice)', animation: 'rr-pulse 1.6s infinite' }} /> LIVE
           </span>
+          <RoundBtn icon="clock" label="Past orders" light onClick={s.openHistory} />
           <RoundBtn icon="x" label="Sign out" light onClick={s.logout} />
         </div>
       </AppHeader>

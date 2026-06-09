@@ -25,11 +25,14 @@ export interface Store {
   queue: RunnerOrder[] // unclaimed, oldest-first
   activeOrder: RunnerOrder | null // the one order this runner owns
   justDelivered: RunnerOrder | null // snapshot for the success screen
+  history: RunnerOrder[] // delivered orders, most recent first
   /** ms-precision clock that ticks every second, for live age timers */
   now: number
   // actions
   claim: (orderId: string) => Promise<void>
   deliver: (code: string) => Promise<void>
+  openHistory: () => Promise<void>
+  closeHistory: () => void
   // chrome
   toast: (msg: string) => void
   toastMsg: string | null
@@ -46,6 +49,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<RunnerOrder[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [justDelivered, setJustDelivered] = useState<RunnerOrder | null>(null)
+  const [history, setHistory] = useState<RunnerOrder[]>([])
   const [now, setNow] = useState(() => Date.now())
   const [toastMsg, setToastMsg] = useState<string | null>(null)
 
@@ -161,6 +165,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const openHistory = async () => {
+    try {
+      setHistory(await api.listHistory())
+    } catch {
+      setHistory([])
+    }
+    setScreen('history')
+  }
+  const closeHistory = () => setScreen('queue')
+
   const value: Store = {
     session,
     login,
@@ -169,9 +183,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     queue,
     activeOrder,
     justDelivered,
+    history,
     now,
     claim,
     deliver,
+    openHistory,
+    closeHistory,
     toast,
     toastMsg,
   }
