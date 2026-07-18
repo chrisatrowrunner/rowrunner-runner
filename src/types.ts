@@ -50,6 +50,9 @@ export interface RunnerOrder {
   lines: OrderLine[]
   /** when the fan placed it (epoch ms) — drives the live age timer */
   placedAt: number
+  /** when the kitchen marked it ready (epoch ms), or null while still cooking.
+   *  Runners only ever see orders the kitchen has marked ready. */
+  readyAt: number | null
   stage: OrderStage
   /** runner who owns it, or null while it sits in the queue */
   runnerId: string | null

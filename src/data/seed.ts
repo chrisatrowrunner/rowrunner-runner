@@ -65,6 +65,9 @@ export function makeOrder(ageSec = 0): RunnerOrder {
     stand: pick(STANDS),
     lines: randomLines(),
     placedAt: Date.now() - ageSec * 1000,
+    // Mock has no KDS step, so treat every seeded order as kitchen-ready
+    // (otherwise the ready_at queue gate would hide them all).
+    readyAt: Date.now() - ageSec * 1000,
     stage: 1, // being prepared — ready for a runner to claim
     runnerId: null,
     runnerName: null,

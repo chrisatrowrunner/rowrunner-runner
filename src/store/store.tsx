@@ -102,9 +102,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [orders, activeId],
   )
 
-  // Queue = unclaimed and not yet picked up. Hidden while this runner is busy.
+  // Queue = unclaimed, not yet picked up, AND marked ready by the kitchen.
+  // Runners never see an order until the KDS sets ready_at, so nobody claims
+  // food that isn't cooked yet. Hidden while this runner is busy.
   const queue = useMemo(
-    () => orders.filter((o) => !o.runnerId && o.stage < 2),
+    () => orders.filter((o) => !o.runnerId && o.stage < 2 && o.readyAt != null),
     [orders],
   )
 
