@@ -5,12 +5,14 @@ import { useState } from 'react'
 import { useStore, ageLabel } from '../store/store'
 import { Icon } from '../components/Icon'
 import { AppHeader, CTA, BottomDock } from '../components/ui'
+import { seatLines } from '../lib/seat'
 
 export function ActiveScreen() {
   const s = useStore()
   const o = s.activeOrder
   const [code, setCode] = useState('')
   if (!o) return null
+  const loc = seatLines(o.seat)
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--offwhite)' }}>
@@ -48,10 +50,10 @@ export function ActiveScreen() {
             Deliver to
           </div>
           <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: -0.6, marginTop: 4, lineHeight: 1.05 }}>
-            Sec {o.seat.section}
+            {loc.isZone ? loc.spot : `Sec ${o.seat.section}`}
           </div>
           <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--ice)', marginTop: 2 }}>
-            Row {o.seat.row} · Seat {o.seat.seat}
+            {loc.isZone ? loc.area : loc.spot}
           </div>
           {o.customerName && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, fontSize: 14, fontWeight: 700, background: 'rgba(255,255,255,.10)', padding: '7px 12px', borderRadius: 999 }}>

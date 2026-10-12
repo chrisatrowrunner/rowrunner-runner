@@ -3,6 +3,7 @@
 // orders that have waited too long warm from ice → amber → red.
 import { useStore, ageLabel, urgency } from '../store/store'
 import type { RunnerOrder } from '../types'
+import { seatLines } from '../lib/seat'
 import { Icon } from '../components/Icon'
 import { AppHeader, RoundBtn, Tag } from '../components/ui'
 
@@ -40,10 +41,10 @@ function OrderCard({ o }: { o: RunnerOrder }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.5, color: 'var(--faint)', textTransform: 'uppercase' }}>
-            Section {o.seat.section}
+            {seatLines(o.seat).area}
           </div>
           <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--navy)', letterSpacing: -0.5, lineHeight: 1.1 }}>
-            Row {o.seat.row} · Seat {o.seat.seat}
+            {seatLines(o.seat).spot}
           </div>
         </div>
         <span

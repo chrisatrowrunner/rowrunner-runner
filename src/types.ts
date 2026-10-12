@@ -5,11 +5,20 @@
 // row drives both apps. The runner app only ever reads/writes the slice of that
 // row a runner cares about — location, items, stage, and who claimed it.
 
-/** A seat in the venue — identical shape to the fan app's `Seat`. */
+/**
+ * A seat in the venue — identical shape to the fan app's `Seat`. Zone venues
+ * (unnumbered seating) also set zone/label/detail; format with lib/seat.ts.
+ */
 export interface Seat {
   section: string
   row: string
   seat: string
+  /** zone id the guest tapped on the venue map, e.g. "A2" or "B" */
+  zone?: string
+  /** e.g. "Section A2" / "Zone B" */
+  label?: string
+  /** e.g. "South bleachers" */
+  detail?: string
 }
 
 /** Where the runner physically picks the order up. */

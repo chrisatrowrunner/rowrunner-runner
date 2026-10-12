@@ -1,6 +1,7 @@
 // History.tsx — past (delivered) orders, most recent first.
 import { useStore } from '../store/store'
 import type { RunnerOrder } from '../types'
+import { seatLines } from '../lib/seat'
 import { Icon } from '../components/Icon'
 import { AppHeader, RoundBtn, Tag } from '../components/ui'
 
@@ -22,10 +23,10 @@ function HistoryCard({ o }: { o: RunnerOrder }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 0.5, color: 'var(--faint)', textTransform: 'uppercase' }}>
-            #{o.orderNo} · Sec {o.seat.section}
+            #{o.orderNo} · {seatLines(o.seat).area}
           </div>
           <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--navy)', letterSpacing: -0.3, lineHeight: 1.15 }}>
-            Row {o.seat.row} · Seat {o.seat.seat}
+            {seatLines(o.seat).spot}
           </div>
         </div>
         <Tag tone="green">Delivered</Tag>

@@ -2,6 +2,7 @@
 // (the store sets a timer) so the runner never has to navigate manually.
 import { useStore } from '../store/store'
 import { Icon } from '../components/Icon'
+import { seatLines } from '../lib/seat'
 
 export function DeliveredScreen() {
   const s = useStore()
@@ -42,7 +43,7 @@ export function DeliveredScreen() {
       <h1 style={{ margin: '20px 0 0', fontSize: 28, fontWeight: 800, textAlign: 'center' }}>Order delivered</h1>
       {o && (
         <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ice)', marginTop: 8, textAlign: 'center' }}>
-          Sec {o.seat.section} · Row {o.seat.row} · Seat {o.seat.seat}
+          {seatLines(o.seat).text}
         </div>
       )}
       <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,.55)', marginTop: 18 }}>

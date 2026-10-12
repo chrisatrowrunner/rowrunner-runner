@@ -2,48 +2,41 @@
 //
 // In production the runner queue is a live query on the `orders` table the fan
 // app writes to. Here we generate believable orders so the whole claim →
-// deliver flow is clickable with no backend. The vendors/seats/items below are
-// drawn from the same NYC Tech Week demo venue the fan app ships.
+// deliver flow is clickable with no backend. The stand/zones/items below match
+// the URI men's soccer pilot the fan app ships (one food truck, zone seating).
+// The multi-vendor NYC Tech Week version is at the `pre-uri-soccer` git tag.
 import type { OrderLine, RunnerOrder, Seat, Stand } from '../types'
 
-// Concession stands a runner picks up from (subset of the fan app's vendor pool).
-export const STANDS: Stand[] = [
-  { name: 'The Brooklyn Grill', loc: 'Concourse A · Sec 110' },
-  { name: 'Empire Eats', loc: 'Main Hall · Sec 118' },
-  { name: 'Liberty Bites', loc: 'Concourse C · Sec 232' },
-  { name: 'Hudson Coffee Co.', loc: 'Atrium · Sec 101' },
-  { name: 'Five Boroughs Tap', loc: 'Mezzanine · Sec 220' },
-  { name: 'The Official Store', loc: 'Main Hall · Sec 115' },
-]
+// The one food truck for the pilot.
+export const STANDS: Stand[] = [{ name: "Pam's Grill", loc: 'Food truck · East gate, Tootell Rd' }]
 
 // Item pool: name + the options/add-ons a fan might have chosen.
 const ITEM_POOL: OrderLine[] = [
-  { name: 'Buffalo Wings', qty: 1, option: 'Classic Buffalo', addons: ['Extra Sauce'] },
-  { name: 'Stadium Cheeseburger', qty: 1, option: 'Medium-Well', addons: ['Add Bacon'] },
-  { name: 'Loaded Nachos', qty: 1, option: 'Pulled Pork', addons: [] },
-  { name: 'Classic Hot Dog', qty: 2, option: 'Chicago', addons: [] },
-  { name: 'Jumbo Soft Pretzel', qty: 1, option: null, addons: ['Extra Beer Cheese'] },
-  { name: 'Garlic Parm Fries', qty: 1, option: null, addons: [] },
-  { name: 'Draft Beer', qty: 2, option: 'Narragansett Lager', addons: [] },
-  { name: 'Frozen Margarita', qty: 1, option: 'Strawberry', addons: [] },
-  { name: 'Fountain Soda', qty: 1, option: 'Cola', addons: [] },
-  { name: 'Bottled Water', qty: 2, option: null, addons: [] },
-  { name: 'Kettle Popcorn', qty: 1, option: null, addons: [] },
-  { name: 'Game Day Tee', qty: 1, option: 'L', addons: [] },
+  { name: 'Classic Cheeseburger', qty: 1, option: 'Double', addons: ['Bacon'] },
+  { name: 'Black Bean Veggie Burger', qty: 1, option: null, addons: ['Avocado'] },
+  { name: 'Crispy Chicken Sandwich', qty: 1, option: 'Spicy', addons: [] },
+  { name: 'All-Beef Hot Dog', qty: 2, option: 'Chili Dog', addons: [] },
+  { name: 'Chicken Tenders', qty: 1, option: 'Honey Mustard', addons: ['Extra Sauce'] },
+  { name: 'French Fries', qty: 1, option: 'Large', addons: ['Cheese Sauce'] },
+  { name: 'Onion Rings', qty: 1, option: null, addons: [] },
+  { name: 'Mozzarella Sticks', qty: 1, option: null, addons: ['Extra Marinara'] },
 ]
 
-const SECTIONS = ['112', '118', '124', '204', '208', '232']
-const ROWS = ['A', 'C', 'F', 'J', 'M', 'R']
+// Zones on the URI Soccer Complex map (same as the fan app's ZONES).
+const ZONE_SEATS: Seat[] = [
+  ...['A0', 'A1', 'A2', 'A3', 'A4'].map((z) => ({
+    section: z, row: '', seat: '', zone: z, label: `Section ${z}`, detail: 'South bleachers',
+  })),
+  { section: 'B', row: '', seat: '', zone: 'B', label: 'Zone B', detail: 'North sideline' },
+  { section: 'C', row: '', seat: '', zone: 'C', label: 'Zone C', detail: 'East end' },
+  { section: 'D', row: '', seat: '', zone: 'D', label: 'Zone D', detail: 'West end' },
+]
 const NAMES = ['Alex', 'Jordan', 'Sam', 'Taylor', 'Casey', 'Riley', 'Morgan', 'Jamie']
 
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
 function randomSeat(): Seat {
-  return {
-    section: pick(SECTIONS),
-    row: pick(ROWS),
-    seat: String(1 + Math.floor(Math.random() * 28)),
-  }
+  return { ...pick(ZONE_SEATS) }
 }
 
 function randomLines(): OrderLine[] {

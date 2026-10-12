@@ -3,6 +3,7 @@
 // pill chrome, ice-blue CTA).
 import type { CSSProperties, ReactNode } from 'react'
 import { Icon, type IconName } from './Icon'
+import { seatLines } from '../lib/seat'
 import type { Seat } from '../types'
 
 // ── Status-bar-safe navy header ──────────────────────────────
@@ -97,8 +98,7 @@ export function SeatPill({
       }}
     >
       <Icon name="pin" size={14} sw={2.4} />
-      Sec {seat.section} · {seat.row}
-      {seat.seat}
+      {seatLines(seat).short}
     </span>
   )
 }
