@@ -178,22 +178,26 @@ function rowToOrder(r: OrderRow): RunnerOrder {
   }
 }
 
+/**
+ * The venue this build serves. The `orders` table is shared across venues, so
+ * every read is scoped to it — otherwise undelivered orders from a past event
+ * (e.g. NYC Tech Week) show up in this event's queue. Unset → all venues.
+ */
+const VENUE_ID: string | undefined = import.meta.env.VITE_VENUE_ID || undefined
+
 function createSupabaseApi(): RunnerOrdersApi {
   const sb = getSupabase()
   const listActive = async () => {
-    const { data, error } = await sb
-      .from('orders')
-      .select(COLS)
-      .lt('stage', 4)
-      .order('placed_at', { ascending: true })
+    let q = sb.from('orders').select(COLS).lt('stage', 4)
+    if (VENUE_ID) q = q.eq('venue_id', VENUE_ID)
+    const { data, error } = await q.order('placed_at', { ascending: true })
     if (error) throw error
     return (data as unknown as OrderRow[]).map(rowToOrder)
   }
   const listHistory = async () => {
-    const { data, error } = await sb
-      .from('orders')
-      .select(COLS)
-      .gte('stage', 4)
+    let q = sb.from('orders').select(COLS).gte('stage', 4)
+    if (VENUE_ID) q = q.eq('venue_id', VENUE_ID)
+    const { data, error } = await q
       .order('placed_at', { ascending: false })
       .limit(50)
     if (error) throw error
