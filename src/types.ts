@@ -76,4 +76,4 @@ export interface RunnerSession {
 }
 
 /** Runner-app screens. */
-export type Screen = 'login' | 'queue' | 'active' | 'delivered' | 'history'
+export type Screen = 'login' | 'events' | 'queue' | 'active' | 'delivered' | 'history'

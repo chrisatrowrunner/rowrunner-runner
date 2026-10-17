@@ -118,7 +118,27 @@ export function QueueScreen() {
       <AppHeader>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,.6)' }}>Hi {first} 👋</div>
+            {s.selectedEvent ? (
+              <button
+                onClick={s.changeEvent}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  color: 'var(--ice)',
+                  maxWidth: '100%',
+                }}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {s.selectedEvent.home} vs {s.selectedEvent.away}
+                </span>
+                <Icon name="chevD" size={14} sw={2.4} />
+              </button>
+            ) : (
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'rgba(255,255,255,.6)' }}>Hi {first} 👋</div>
+            )}
             <h1 style={{ margin: 0, fontSize: 21, fontWeight: 800 }}>Available orders</h1>
           </div>
           <span

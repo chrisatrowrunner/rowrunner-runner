@@ -2,6 +2,7 @@
 import { StoreProvider, useStore } from './store/store'
 import { Icon } from './components/Icon'
 import { LoginScreen } from './screens/Login'
+import { EventsScreen } from './screens/Events'
 import { QueueScreen } from './screens/Queue'
 import { ActiveScreen } from './screens/Active'
 import { DeliveredScreen } from './screens/Delivered'
@@ -12,6 +13,8 @@ function Router() {
   switch (s.screen) {
     case 'login':
       return <LoginScreen />
+    case 'events':
+      return <EventsScreen />
     case 'queue':
       return <QueueScreen />
     case 'active':

@@ -13,12 +13,21 @@ import {
 import type { RunnerOrder, RunnerSession, Screen } from '../types'
 import { createOrdersApi } from '../lib/orders'
 import { restore, signIn, signOut } from '../lib/auth'
+import { EVENTS, eventById, type RunnerEvent } from '../data/events'
+
+/** localStorage key for the event the runner last picked (survives refresh). */
+const EVENT_KEY = 'rr.runner.event'
 
 export interface Store {
   // session
   session: RunnerSession | null
   login: (email: string, password: string) => Promise<void>
   logout: () => void
+  // event the runner is working
+  events: RunnerEvent[]
+  selectedEvent: RunnerEvent | null
+  selectEvent: (ev: RunnerEvent) => void
+  changeEvent: () => void
   // routing
   screen: Screen
   // live data
@@ -45,6 +54,7 @@ const api = createOrdersApi()
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<RunnerSession | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<RunnerEvent | null>(null)
   const [screen, setScreen] = useState<Screen>('login')
   const [orders, setOrders] = useState<RunnerOrder[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -57,11 +67,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const redirectT = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // ── restore a persisted session on load ──
+  // If the runner already picked an event in a prior visit, skip straight to its
+  // queue; otherwise send them to the event picker.
   useEffect(() => {
     restore().then((s) => {
-      if (s) {
-        setSession(s)
+      if (!s) return
+      setSession(s)
+      let ev: RunnerEvent | null = null
+      try {
+        ev = eventById(localStorage.getItem(EVENT_KEY))
+      } catch {
+        ev = null
+      }
+      if (ev) {
+        setSelectedEvent(ev)
         setScreen('queue')
+      } else {
+        setScreen('events')
       }
     })
   }, [])
@@ -119,13 +141,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const s = await signIn(email, password)
     setSession(s)
+    // Pick the game before working the queue.
+    setScreen('events')
+  }
+
+  const selectEvent = (ev: RunnerEvent) => {
+    setSelectedEvent(ev)
+    try {
+      localStorage.setItem(EVENT_KEY, ev.id)
+    } catch {
+      /* ignore */
+    }
     setScreen('queue')
   }
+
+  /** Jump back to the event picker (e.g. a runner switching games mid-shift). */
+  const changeEvent = () => setScreen('events')
 
   const logout = () => {
     void signOut()
     setSession(null)
+    setSelectedEvent(null)
     setActiveId(null)
+    try {
+      localStorage.removeItem(EVENT_KEY)
+    } catch {
+      /* ignore */
+    }
     setScreen('login')
   }
 
@@ -181,6 +223,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     session,
     login,
     logout,
+    events: EVENTS,
+    selectedEvent,
+    selectEvent,
+    changeEvent,
     screen,
     queue,
     activeOrder,
