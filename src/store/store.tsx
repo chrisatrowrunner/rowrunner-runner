@@ -128,8 +128,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // Runners never see an order until the KDS sets ready_at, so nobody claims
   // food that isn't cooked yet. Hidden while this runner is busy.
   const queue = useMemo(
-    () => orders.filter((o) => !o.runnerId && o.stage < 2 && o.readyAt != null),
-    [orders],
+    () =>
+      orders.filter(
+        (o) =>
+          !o.runnerId &&
+          o.stage < 2 &&
+          o.readyAt != null &&
+          // scope to the event the runner picked; untagged (legacy) orders still show
+          (o.eventId == null || o.eventId === selectedEvent?.id),
+      ),
+    [orders, selectedEvent],
   )
 
   const toast = (msg: string) => {
@@ -211,7 +219,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const openHistory = async () => {
     try {
-      setHistory(await api.listHistory())
+      const all = await api.listHistory()
+      setHistory(all.filter((o) => o.eventId == null || o.eventId === selectedEvent?.id))
     } catch {
       setHistory([])
     }

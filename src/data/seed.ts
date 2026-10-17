@@ -52,6 +52,7 @@ export function makeOrder(ageSec = 0): RunnerOrder {
   return {
     id: 'ord_' + Math.random().toString(36).slice(2, 10),
     orderNo: nextOrderNo++,
+    eventId: null, // offline mock orders are event-agnostic (show under any event)
     customerName: pick(NAMES),
     notes: null,
     seat: randomSeat(),

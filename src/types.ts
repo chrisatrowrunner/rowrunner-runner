@@ -50,6 +50,8 @@ export type OrderStage = 0 | 1 | 2 | 3 | 4
 export interface RunnerOrder {
   id: string
   orderNo: number
+  /** which event (game) the order belongs to; null for legacy/untagged orders */
+  eventId: string | null
   /** the guest's name (so the runner knows who they're delivering to) */
   customerName: string | null
   /** special instructions / dietary notes from the guest (may be empty) */

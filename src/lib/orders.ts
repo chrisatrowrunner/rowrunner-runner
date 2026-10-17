@@ -144,12 +144,13 @@ function createMockApi(): RunnerOrdersApi {
 // ── Supabase implementation (used when env vars are set) ─────
 // Explicit column list — NEVER select `code` (the handoff code is hidden from
 // the table API by column-level grants; it's only verified via deliver_order).
-const COLS = 'id, order_no, customer_name, notes, seat, stand, lines, placed_at, ready_at, stage, runner_id, runner_name'
+const COLS = 'id, order_no, event_id, customer_name, notes, seat, stand, lines, placed_at, ready_at, stage, runner_id, runner_name'
 
 /** Raw `orders` table row (snake_case) → RunnerOrder (camelCase). */
 type OrderRow = {
   id: string
   order_no: number
+  event_id: string | null
   customer_name: string | null
   notes: string | null
   seat: RunnerOrder['seat']
@@ -165,6 +166,7 @@ function rowToOrder(r: OrderRow): RunnerOrder {
   return {
     id: r.id,
     orderNo: r.order_no,
+    eventId: r.event_id,
     customerName: r.customer_name,
     notes: r.notes,
     seat: r.seat,
